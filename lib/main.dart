@@ -1,5 +1,56 @@
 import 'package:flutter/material.dart';
 import 'widgets/weather_tile.dart';
+import 'package:http/http.dart' as http;
+import 'dart:async';
+import 'dart:convert';
+
+Future<WeatherInfo> fetchWeather() async {
+  final zipCode = "06980";
+  final apiKey = "6283ba8fed6bd22822d609ef3147b185";
+  final requestUrl =
+      "https://api.openweathermap.org/data/2.5/weather?zip=${zipCode},tr&appid=${apiKey}";
+
+  final response = await http.get(Uri.parse(requestUrl));
+
+  if (response.statusCode == 200) {
+    return WeatherInfo.fromJson(jsonDecode(response.body));
+  }
+  else {
+    throw Exception("Error loading request URL info.")
+  }
+}
+
+class WeatherInfo {
+  final location;
+  final temp;
+  final tempMin;
+  final tempMax;
+  final weather;
+  final humidity;
+  final windSpeed;
+
+  WeatherInfo({
+    required this.location, 
+    required this.temp, 
+    required this.tempMin, 
+    required this.tempMax, 
+    required this.weather, 
+    required this.humidity, 
+    required this.windSpeed
+  });
+
+  factory WeatherInfo.fromJson(Map<String,dynamic> json) {
+    return WeatherInfo(
+      location: json['name'], 
+      temp: json['main']['temp'], 
+      tempMin: json['main']['temp_min'], 
+      tempMax: json['main']['temp_max'], 
+      weather: json['weather'][0]['description'], 
+      humidity: json['main']['humidity'], 
+      windSpeed: json['wind']['speed']
+    );
+  }
+}
 
 void main() {
   runApp(MaterialApp(title: "Weather App", home: MyApp()));
